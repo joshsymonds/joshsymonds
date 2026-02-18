@@ -58,16 +58,6 @@ When I'm not wrangling infrastructure, I'm building AI-powered creative projects
 
 ---
 
-### Featured Project
-
-**[Afterlight](https://github.com/joshsymonds/afterlight)** — Multi-agent LLM orchestration engine
-
-196k lines of Go powering AI storytelling: phase-based state machine with tool-mediated LLM control, real-time SSE streaming, pgvector semantic search, and research-backed drama management. Built with a custom test harness for deterministic LLM scenario testing.
-
-`Go` `SvelteKit` `PostgreSQL` `pgvector`
-
----
-
 <p align="center">
   <img src="https://github-readme-stats.vercel.app/api?username=joshsymonds&show_icons=true&hide_border=true&bg_color=1a1a1a&title_color=2EC4B6&text_color=cccccc&icon_color=FF6B6B" alt="GitHub Stats" />
 </p>
