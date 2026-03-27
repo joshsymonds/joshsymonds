@@ -14,7 +14,17 @@
 
 Principal Infrastructure Engineer building platforms at scale. I design systems that let teams ship fast and sleep well — Kubernetes clusters, GitOps pipelines, edge computing, and the developer tooling that ties it all together.
 
-When I'm not wrangling infrastructure, I'm building AI-powered creative projects and teaching engineers how to work with LLMs effectively.
+When I'm not wrangling infrastructure, I'm building [savecraft.gg](https://savecraft.gg) — an open-source MCP server that connects game save files to AI assistants.
+
+---
+
+### Current Project
+
+**[Savecraft](https://savecraft.gg)** — Your AI gaming companion, powered by your actual save data.
+
+A Go daemon watches your save files and executes sandboxed WASM plugins to parse them into structured data. Cloudflare Workers serve that data to AI assistants (Claude, ChatGPT, Gemini) via MCP tools over OAuth 2.1. Supports Diablo II, MTG Arena, Stardew Valley, RimWorld, World of Warcraft, and more.
+
+Apache 2.0 · [Source](https://github.com/joshsymonds/savecraft.gg)
 
 ---
 
@@ -42,9 +52,9 @@ When I'm not wrangling infrastructure, I'm building AI-powered creative projects
   <tr>
     <td><b>AI / LLMs</b></td>
     <td>
-      <img src="https://img.shields.io/badge/LLM_Orchestration-2EC4B6?style=flat-square&logo=openai&logoColor=white" />
-      <img src="https://img.shields.io/badge/ComfyUI-FFD166?style=flat-square&logo=data:image/svg+xml;base64,&logoColor=black" />
-      <img src="https://img.shields.io/badge/pgvector-336791?style=flat-square&logo=postgresql&logoColor=white" />
+      <img src="https://img.shields.io/badge/MCP-2EC4B6?style=flat-square&logo=openai&logoColor=white" />
+      <img src="https://img.shields.io/badge/Cloudflare_Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white" />
+      <img src="https://img.shields.io/badge/WASM-654FF0?style=flat-square&logo=webassembly&logoColor=white" />
     </td>
   </tr>
   <tr>
