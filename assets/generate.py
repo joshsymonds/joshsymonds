@@ -23,13 +23,12 @@ OUT = Path(__file__).parent
 
 TEAL, CORAL, YELLOW, PINK = "#2ec4b6", "#ff6b6b", "#ffd166", "#ffb6c1"
 INK, CREAM = "#1a1a1a", "#f4f0e6"
-PAGE, PAGE_DARK = "#ffffff", "#0d1117"
 
 # Outlines and shadows flip to cream in dark mode, as the site's --black does.
-# .h is a halo in GitHub's page color that separates a letter from what sits behind it.
+# Outlined letters (.l) take the opposite fill, so the outline always shows.
 STYLE = (
-    f"<style>.i{{fill:{INK}}}.s{{stroke:{INK}}}.h{{stroke:{PAGE}}}"
-    f"@media (prefers-color-scheme:dark){{.i{{fill:{CREAM}}}.s{{stroke:{CREAM}}}.h{{stroke:{PAGE_DARK}}}}}</style>"
+    f"<style>.i{{fill:{INK}}}.s{{stroke:{INK}}}.l{{fill:{CREAM}}}"
+    f"@media (prefers-color-scheme:dark){{.i{{fill:{CREAM}}}.s{{stroke:{CREAM}}}.l{{fill:{INK}}}}}</style>"
 )
 
 
@@ -82,10 +81,10 @@ def wordmark(bold: Face) -> str:
     parts: list[str] = []
     x = border
 
-    def letters(text: str, halo: bool = False) -> None:
+    def letters(text: str) -> None:
         nonlocal x
-        outline = ' stroke-width="4" stroke-linejoin="round" paint-order="stroke"' if halo else ""
-        parts.append(f'<path class="i{" h" if halo else ""}"{outline} d="{bold.path(text, size, x, base)}"/>')
+        outline = 'stroke-width="4" stroke-linejoin="round" paint-order="stroke"'
+        parts.append(f'<path class="l s" {outline} d="{bold.path(text, size, x, base)}"/>')
         x += bold.width(text, size)
 
     def o_shape(kind: str) -> None:
@@ -113,7 +112,7 @@ def wordmark(bold: Face) -> str:
     lean = math.tan(math.radians(12)) * (top + bh / 2)
     block = f'x="{x - size * 0.08:.1f}" y="{top:.1f}" width="{bw:.1f}" height="{bh:.1f}"'
     parts.append(f'<rect {block} fill="{YELLOW}" class="s" stroke-width="{border}" transform="skewX(-12) translate({lean:.1f} 0)"/>')
-    letters("S", halo=True)
+    letters("S")
     letters("ym")
     o_shape("square")
     letters("nds")
