@@ -10,7 +10,7 @@ Fifteen years in infrastructure and security, from building M1 Finance's platfor
 
 ### <img src="assets/shape-circle.svg" width="18" alt=""> Now
 
-**Attain** &nbsp;<sub>Director of SRE, Consumer Product</sub>
+**Attain** · *Director of SRE, Consumer Product*
 
 - **Agent platform.** Built Marvin, Attain's company-wide agent platform in Slack. Agents run as ephemeral Kubernetes workers with per-user OAuth, Cedar policies on every tool, and versioned model routes with one-step rollback.
 - **Evaluation.** A harness that replays production code reviews against candidate models, used to move review to open-weight models.
@@ -18,30 +18,30 @@ Fifteen years in infrastructure and security, from building M1 Finance's platfor
 
 ### <img src="assets/shape-triangle.svg" width="18" alt=""> Selected work
 
-<img src="assets/glyph-savecraft.svg" width="22" align="top" alt=""> **[Savecraft](https://savecraft.gg)** &nbsp;<sub>Go · TypeScript · WebAssembly · MCP</sub><br>
+<img src="assets/glyph-savecraft.svg" width="22" align="top" alt=""> **[Savecraft](https://savecraft.gg)** · *Go, TypeScript, WebAssembly, MCP*<br>
 An AI gaming companion that works from your real save files, across 14 games and in OpenAI's connector directory. Its model was chosen by a 13-model bake-off over 295 production scenarios, judged by a validated decider model. The local client is [open source](https://github.com/joshsymonds/savecraft-client).
 
-<img src="assets/glyph-gambit.svg" width="22" align="top" alt=""> **[Gambit](https://github.com/joshsymonds/gambit)** &nbsp;<sub>Claude Code · Pi</sub><br>
+<img src="assets/glyph-gambit.svg" width="22" align="top" alt=""> **[Gambit](https://github.com/joshsymonds/gambit)** · *Claude Code, Pi*<br>
 A contract-to-release workflow for coding agents. Each task is judged done or not done against a written contract, with test evidence and no check-ins mid-run.
 
-<img src="assets/glyph-nix.svg" width="22" align="top" alt=""> **[nix-config](https://github.com/joshsymonds/nix-config)** &nbsp;<sub>Nix · NixOS · home-manager</sub><br>
+<img src="assets/glyph-nix.svg" width="22" align="top" alt=""> **[nix-config](https://github.com/joshsymonds/nix-config)** · *Nix, NixOS, home-manager*<br>
 Declarative configuration for my nine-host NixOS fleet.
 
-<img src="assets/glyph-dynamoid.svg" width="22" align="top" alt=""> **[Dynamoid](https://rubygems.org/gems/dynamoid)** &nbsp;<sub>Ruby · DynamoDB</sub><br>
+<img src="assets/glyph-dynamoid.svg" width="22" align="top" alt=""> **[Dynamoid](https://rubygems.org/gems/dynamoid)** · *Ruby, DynamoDB*<br>
 The Ruby ORM for Amazon DynamoDB. I'm the original author; it has over 13 million downloads.
 
 ### <img src="assets/shape-diamond.svg" width="18" alt=""> Earlier
 
-<img src="assets/shape-circle.svg" width="12" alt=""> **CrossnoKaye** &nbsp;<sub>2021–2026</sub><br>
+<img src="assets/shape-circle.svg" width="12" alt=""> **CrossnoKaye** · *2021–2026*<br>
 Principal Infrastructure Engineer, then Senior Manager of Core Services. Built the control plane, deploy tooling, and industrial IoT edge OS for 123 production deployments.
 
-<img src="assets/shape-triangle.svg" width="12" alt=""> **Capital Markets Gateway** &nbsp;<sub>2019–2020</sub><br>
+<img src="assets/shape-triangle.svg" width="12" alt=""> **Capital Markets Gateway** · *2019–2020*<br>
 DevOps Engineer and CISO. Multi-region Kubernetes, plus the NIST CSF and ISO 27001 programs.
 
-<img src="assets/shape-diamond.svg" width="12" alt=""> **M1 Finance** &nbsp;<sub>2015–2019</sub><br>
+<img src="assets/shape-diamond.svg" width="12" alt=""> **M1 Finance** · *2015–2019*<br>
 Chief Information Security Officer. Employee #8; built the infrastructure from launch to nearly $1B in assets.
 
-<img src="assets/shape-square.svg" width="12" alt=""> **Symonds & Son** &nbsp;<sub>2011–present</sub><br>
+<img src="assets/shape-square.svg" width="12" alt=""> **Symonds & Son** · *2011–present*<br>
 Founder of an independent infrastructure consultancy. Running LiveWorld's AWS platform and GPU inference infrastructure since 2013.
 
-<img src="assets/shape-squiggle.svg" width="12" alt=""> **University of Chicago** &nbsp;<sub>BA, East Asian Languages and Civilizations</sub>
+<img src="assets/shape-squiggle.svg" width="12" alt=""> **University of Chicago** · *BA, East Asian Languages and Civilizations*
