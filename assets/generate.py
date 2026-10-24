@@ -1,107 +1,205 @@
-"""Generate the README's timeline and Gambit SVGs: python3 assets/generate.py"""
+# /// script
+# dependencies = ["fonttools"]
+# ///
+"""Generate the README's Memphis graphics, echoing joshsymonds.com.
 
-from html import escape
+Text is outlined from Space Grotesk so it renders the same everywhere:
+
+    curl -L -o /tmp/SpaceGrotesk.ttf 'https://github.com/google/fonts/raw/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf'
+    uv run assets/generate.py /tmp/SpaceGrotesk.ttf
+"""
+
+import math
+import sys
 from pathlib import Path
+from typing import final
+
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
+from fontTools.ttLib import TTFont
+from fontTools.varLib.instancer import instantiateVariableFont
 
 OUT = Path(__file__).parent
 
-FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif"
-THEMES = {
-    "light": dict(fg="#1f2328", muted="#59636e", line="#d1d9e0", accent="#0969da", soft="#b6d7ff", node="#f6f8fa"),
-    "dark": dict(fg="#f0f6fc", muted="#9198a1", line="#3d444d", accent="#4493f8", soft="#1f3a5f", node="#151b23"),
-}
-SIZES = {"": 840, "-narrow": 420}
-CHAR = 7.0  # rough average advance at 13px, used only to keep labels inside the frame
+TEAL, CORAL, YELLOW, PINK = "#2ec4b6", "#ff6b6b", "#ffd166", "#ffb6c1"
+INK, CREAM = "#1a1a1a", "#f4f0e6"
+
+# Outlines and shadows flip to cream in dark mode, as the site's --black does.
+STYLE = (
+    f"<style>.i{{fill:{INK}}}.s{{stroke:{INK}}}"
+    f"@media (prefers-color-scheme:dark){{.i{{fill:{CREAM}}}.s{{stroke:{CREAM}}}}}</style>"
+)
 
 
-def svg(w: float, h: float, body: str, title: str) -> str:
+@final
+class Face:
+    def __init__(self, path: str, weight: int) -> None:
+        font = instantiateVariableFont(TTFont(path), {"wght": weight})
+        self.glyphs = font.getGlyphSet()
+        self.cmap = font.getBestCmap()
+        self.upm = font["head"].unitsPerEm
+
+    def advance(self, ch: str, size: float) -> float:
+        return self.glyphs[self.cmap[ord(ch)]].width * size / self.upm
+
+    def width(self, text: str, size: float) -> float:
+        return sum(self.advance(ch, size) for ch in text)
+
+    def path(self, text: str, size: float, x: float, y: float) -> str:
+        scale = size / self.upm
+        pen = SVGPathPen(self.glyphs)
+        for ch in text:
+            name = self.cmap[ord(ch)]
+            self.glyphs[name].draw(TransformPen(pen, (scale, 0, 0, -scale, x, y)))
+            x += self.glyphs[name].width * scale
+        return pen.getCommands()
+
+
+def svg(w: float, h: float, body: str, label: str) -> str:
+    aria = f'role="img" aria-label="{label}"' if label else 'aria-hidden="true"'
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h:.0f}" viewBox="0 0 {w} {h:.0f}" role="img" aria-label="{title}">'
-        f"<title>{title}</title>"
-        f'<g font-family="{FONT}" font-size="13">{body}</g></svg>\n'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w:.0f}" height="{h:.0f}" '
+        f'viewBox="0 0 {w:.1f} {h:.1f}" {aria}>{STYLE}{body}</svg>\n'
     )
 
 
-ROLES = [
-    ("Symonds & Son", "Founder", 2011.0, 2026.8, "soft"),
-    ("M1 Finance", "CISO", 2015.58, 2019.75, "accent"),
-    ("Capital Markets Gateway", "DevOps & CISO", 2019.83, 2020.96, "accent"),
-    ("CrossnoKaye", "Principal Engineer, Senior Manager", 2021.0, 2026.1, "accent"),
-    ("Attain", "Director of SRE", 2026.17, 2026.8, "accent"),
+def wave(x0: float, y: float, length: float, amp: float, step: float) -> str:
+    d = f"M{x0:.1f},{y:.1f}"
+    x, up = x0, True
+    while x + step <= x0 + length:
+        d += f" Q{x + step / 2:.1f},{y - amp if up else y + amp:.1f} {x + step:.1f},{y:.1f}"
+        x += step
+        up = not up
+    return d
+
+
+def wordmark(bold: Face) -> str:
+    size, border = 40.0, 2.5
+    base = size * 0.95
+    mark = size * 0.55
+    parts: list[str] = []
+    x = border
+
+    def letters(text: str) -> None:
+        nonlocal x
+        parts.append(f'<path class="i" d="{bold.path(text, size, x, base)}"/>')
+        x += bold.width(text, size)
+
+    def o_shape(kind: str) -> None:
+        nonlocal x
+        adv = bold.advance("o", size)
+        cx = x + adv / 2
+        if kind == "circle":
+            r = mark / 2 - border / 2
+            parts.append(f'<circle cx="{cx:.1f}" cy="{base - mark / 2:.1f}" r="{r:.1f}" fill="{TEAL}" class="s" stroke-width="{border}"/>')
+        else:
+            s = mark - border
+            parts.append(f'<rect x="{cx - s / 2:.1f}" y="{base - mark + border / 2:.1f}" width="{s:.1f}" height="{s:.1f}" fill="{PINK}" class="s" stroke-width="{border}"/>')
+        x += adv
+
+    josh = x
+    letters("J")
+    o_shape("circle")
+    letters("sh")
+    squiggle = wave(josh + size * 0.75, base - size * 0.8, size * 1.15, size * 0.06, size * 0.075)
+    parts.append(f'<path d="{squiggle}" fill="none" class="s" stroke-width="1" stroke-linecap="round"/>')
+    x += size * 0.3
+    s_adv = bold.advance("S", size)
+    sx, sw, sh = x + s_adv / 2, size * 0.15, size * 1.25
+    stripe = f'x="{sx - sw / 2:.1f}" y="{base - size:.1f}" width="{sw:.1f}" height="{sh:.1f}"'
+    tilt = f'rotate(-15 {sx:.1f} {base - size * 0.375:.1f})'
+    parts.append(f'<rect {stripe} fill="{YELLOW}" class="s" stroke-width="{border}" transform="{tilt}"/>')
+    letters("Sym")
+    o_shape("square")
+    letters("nds")
+    return svg(x + border, size * 1.35, "".join(parts), "Josh Symonds")
+
+
+STATS = [
+    ("stat-years", "15 yrs", ("infrastructure", "and security"), TEAL),
+    ("stat-m1", "#8", ("employee at", "M1 Finance"), YELLOW),
+    ("stat-dynamoid", "13M+", ("Dynamoid", "downloads"), CORAL),
+    ("stat-nix", "800+", ("stars on", "nix-config"), PINK),
+    ("stat-savecraft", "14", ("games in", "Savecraft"), TEAL),
+    ("stat-edge", "123", ("edge sites", "shipped"), YELLOW),
 ]
 
 
-def timeline(theme: str, w: float) -> str:
-    c = THEMES[theme]
-    narrow = w < 600
-    pad = 6
-    y0, y1 = 2011.0, 2026.8
-
-    def x(year: float) -> float:
-        return pad + (year - y0) / (y1 - y0) * (w - 2 * pad)
-
-    row = 36
-    parts: list[str] = []
-    for i, (name, role, a, b, kind) in enumerate(ROLES):
-        ry = 4 + i * row
-        xa, xb = x(a), x(b)
-        label_len = len(name) if narrow else len(name) + len(role) + 5
-        if xa + label_len * CHAR > w - pad:
-            tx, anchor = xb, "end"
-        else:
-            tx, anchor = xa, "start"
-        role_span = "" if narrow else f'<tspan fill="{c["muted"]}"> · {escape(role)}</tspan>'
-        name_span = f'<tspan fill="{c["fg"]}" font-weight="600">{escape(name)}</tspan>'
-        parts.append(f'<text x="{tx:.1f}" y="{ry + 14}" text-anchor="{anchor}">{name_span}{role_span}</text>')
-        parts.append(f'<rect x="{xa:.1f}" y="{ry + 21}" width="{xb - xa:.1f}" height="7" rx="3.5" fill="{c[kind]}"/>')
-    axis_y = 4 + row * len(ROLES) + 6
-    parts.append(f'<line x1="{pad}" y1="{axis_y}" x2="{w - pad}" y2="{axis_y}" stroke="{c["line"]}"/>')
-    for yr in range(2011, 2027):
-        gx = x(yr)
-        major = (yr - 2011) % 5 == 0
-        parts.append(f'<line x1="{gx:.1f}" y1="{axis_y}" x2="{gx:.1f}" y2="{axis_y + (6 if major else 3)}" stroke="{c["line"]}"/>')
-        if major and yr < 2026:
-            anchor = "start" if yr == 2011 else "middle"
-            parts.append(f'<text x="{gx:.1f}" y="{axis_y + 20}" fill="{c["muted"]}" font-size="12" text-anchor="{anchor}">{yr}</text>')
-    parts.append(f'<text x="{w - pad}" y="{axis_y + 20}" fill="{c["muted"]}" font-size="12" text-anchor="end">now</text>')
-    return svg(w, axis_y + 28, "".join(parts), "Career timeline, 2011 to present")
+def tile(bold: Face, medium: Face, big: str, lines: tuple[str, str], color: str) -> str:
+    w, h, border, shadow = 124.0, 84.0, 2.5, 4.0
+    o = border / 2
+    parts = [
+        f'<rect x="{o + shadow:.1f}" y="{o + shadow:.1f}" width="{w - border:.1f}" height="{h - border:.1f}" rx="4" class="i"/>',
+        f'<rect x="{o:.1f}" y="{o:.1f}" width="{w - border:.1f}" height="{h - border:.1f}" rx="4" fill="{color}" stroke="{INK}" stroke-width="{border}"/>',
+        f'<path fill="{INK}" d="{bold.path(big, 28, 12, 38)}"/>',
+        f'<path fill="{INK}" d="{medium.path(lines[0], 12, 12, 58)}"/>',
+        f'<path fill="{INK}" d="{medium.path(lines[1], 12, 12, 72)}"/>',
+    ]
+    return svg(w + shadow, h + shadow, "".join(parts), f"{big} {lines[0]} {lines[1]}")
 
 
-STEPS = [("Contract", True), ("Build", False), ("Review", False), ("Release", False), ("Report", True)]
+def glyph(kind: str) -> str:
+    sw = 2.5
+    cls = f'class="s" stroke-width="{sw}" stroke-linejoin="round"'
+    if kind == "savecraft":  # floppy disk
+        body = (
+            f'<path d="M4,3 H24 L29,8 V29 H4 Z" fill="{CORAL}" {cls}/>'
+            f'<rect x="9" y="3" width="12" height="8" fill="{CREAM}" {cls}/>'
+            f'<rect x="16" y="5" width="3" height="4" class="i"/>'
+            f'<rect x="8" y="17" width="17" height="12" fill="{CREAM}" {cls}/>'
+        )
+    elif kind == "gambit":  # pawn
+        body = (
+            f'<path d="M11,16 H21 L23,25 H9 Z" fill="{YELLOW}" {cls}/>'
+            f'<rect x="6" y="25" width="20" height="5" rx="1" fill="{YELLOW}" {cls}/>'
+            f'<rect x="10" y="13" width="12" height="3.5" rx="1" fill="{YELLOW}" {cls}/>'
+            f'<circle cx="16" cy="8" r="5.5" fill="{YELLOW}" {cls}/>'
+        )
+    elif kind == "nix":  # snowflake
+        arms = "".join(
+            f'<line x1="16" y1="16" x2="{16 + 12 * math.cos(math.radians(a)):.1f}" y2="{16 + 12 * math.sin(math.radians(a)):.1f}"/>'
+            for a in range(30, 390, 60)
+        )
+        body = (
+            f'<g class="s" stroke-width="6.5" stroke-linecap="round">{arms}</g>'
+            f'<g stroke="{TEAL}" stroke-width="2.5" stroke-linecap="round">{arms}</g>'
+        )
+    else:  # dynamoid: database cylinder
+        body = (
+            f'<path d="M5,8 V24 A11,4 0 0 0 27,24 V8" fill="{PINK}" {cls}/>'
+            f'<path d="M5,16 A11,4 0 0 0 27,16" fill="none" {cls}/>'
+            f'<ellipse cx="16" cy="8" rx="11" ry="4" fill="{PINK}" {cls}/>'
+        )
+    return svg(32, 32, body, "")
 
 
-def gambit(theme: str, w: float) -> str:
-    c = THEMES[theme]
-    n = len(STEPS)
-    gap = 36 if w >= 600 else 16
-    bw = (w - 4 - gap * (n - 1)) / n
-    bh = 34
-    y = 2
-    parts: list[str] = []
-
-    def left(i: int) -> float:
-        return 2 + i * (bw + gap)
-
-    for i, (label, human) in enumerate(STEPS):
-        bx = left(i)
-        stroke = c["accent"] if human else c["line"]
-        parts.append(f'<rect x="{bx:.1f}" y="{y}" width="{bw:.1f}" height="{bh}" rx="{bh / 2}" fill="{c["node"]}" stroke="{stroke}" stroke-width="{1.5 if human else 1}"/>')
-        parts.append(f'<text x="{bx + bw / 2:.1f}" y="{y + 22}" fill="{c["fg"]}" font-weight="600" text-anchor="middle">{label}</text>')
-        if i < n - 1:
-            ax0, ax1 = bx + bw + gap * 0.22, bx + bw + gap * 0.78
-            ay = y + bh / 2
-            parts.append(f'<line x1="{ax0:.1f}" y1="{ay}" x2="{ax1:.1f}" y2="{ay}" stroke="{c["muted"]}" stroke-width="1.5" stroke-linecap="round"/>')
-            parts.append(f'<path d="M{ax1 - 4:.1f},{ay - 3.5} L{ax1:.1f},{ay} L{ax1 - 4:.1f},{ay + 3.5}" fill="none" stroke="{c["muted"]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>')
-    by = y + bh + 10
-    for i in (0, n - 1):
-        parts.append(f'<text x="{left(i) + bw / 2:.1f}" y="{by + 14}" fill="{c["accent"]}" font-size="12" text-anchor="middle">you</text>')
-    a0, a1 = left(1) + 8, left(3) + bw - 8
-    parts.append(f'<path d="M{a0:.1f},{by} V{by + 5} H{a1:.1f} V{by}" fill="none" stroke="{c["line"]}"/>')
-    parts.append(f'<text x="{(a0 + a1) / 2:.1f}" y="{by + 20}" fill="{c["muted"]}" font-size="12" text-anchor="middle">agents, no check-ins</text>')
-    return svg(w, by + 30, "".join(parts), "Gambit loop: contract, build, review, release, report")
+def shape(kind: str) -> str:
+    sw = 2.5
+    if kind == "circle":
+        body = f'<circle cx="12" cy="12" r="9.5" fill="{TEAL}" class="s" stroke-width="{sw}"/>'
+    elif kind == "triangle":
+        body = f'<path d="M12,3 L22,21 H2 Z" fill="{CORAL}"/>'
+    elif kind == "diamond":
+        body = f'<rect x="5.5" y="5.5" width="13" height="13" fill="{YELLOW}" class="s" stroke-width="{sw}" transform="rotate(45 12 12)"/>'
+    elif kind == "square":
+        body = f'<rect x="4" y="4" width="16" height="16" fill="{PINK}" class="s" stroke-width="{sw}"/>'
+    else:  # squiggle
+        body = f'<path d="{wave(2, 12, 20, 5, 5)}" fill="none" class="s" stroke-width="2.5" stroke-linecap="round"/>'
+    return svg(24, 24, body, "")
 
 
-for theme in THEMES:
-    for suffix, w in SIZES.items():
-        _ = (OUT / f"timeline{suffix}-{theme}.svg").write_text(timeline(theme, w))
-        _ = (OUT / f"gambit{suffix}-{theme}.svg").write_text(gambit(theme, w))
+def main() -> None:
+    bold, medium = Face(sys.argv[1], 700), Face(sys.argv[1], 500)
+    files = {"wordmark.svg": wordmark(bold)}
+    for name, big, lines, color in STATS:
+        files[f"{name}.svg"] = tile(bold, medium, big, lines, color)
+    for kind in ("savecraft", "gambit", "nix", "dynamoid"):
+        files[f"glyph-{kind}.svg"] = glyph(kind)
+    for kind in ("circle", "triangle", "diamond", "square", "squiggle"):
+        files[f"shape-{kind}.svg"] = shape(kind)
+    for name, content in files.items():
+        _ = (OUT / name).write_text(content)
+
+
+if __name__ == "__main__":
+    main()

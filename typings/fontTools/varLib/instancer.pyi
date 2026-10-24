@@ -1,0 +1,3 @@
+from fontTools.ttLib import TTFont
+
+def instantiateVariableFont(varfont: TTFont, axisLimits: dict[str, float]) -> TTFont: ...
