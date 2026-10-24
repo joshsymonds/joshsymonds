@@ -107,11 +107,12 @@ def wordmark(bold: Face) -> str:
     squiggle = wave(josh + size * 0.75, base - size * 0.8, size * 1.15, size * 0.06, size * 0.075)
     parts.append(f'<path d="{squiggle}" fill="none" class="s" stroke-width="1" stroke-linecap="round"/>')
     x += size * 0.3
-    s_adv = bold.advance("S", size)
-    sx, sw, sh = x + s_adv / 2, size * 0.15, size * 1.25
-    stripe = f'x="{sx - sw / 2:.1f}" y="{base - size:.1f}" width="{sw:.1f}" height="{sh:.1f}"'
-    tilt = f'rotate(-15 {sx:.1f} {base - size * 0.375:.1f})'
-    parts.append(f'<rect {stripe} fill="{YELLOW}" class="s" stroke-width="{border}" transform="{tilt}"/>')
+    # A slanted yellow block behind the S, echoing the site's stripe without crossing the letter.
+    bw, bh = bold.advance("S", size) + size * 0.16, size * 0.92
+    top = base - size * 0.8
+    lean = math.tan(math.radians(12)) * (top + bh / 2)
+    block = f'x="{x - size * 0.08:.1f}" y="{top:.1f}" width="{bw:.1f}" height="{bh:.1f}"'
+    parts.append(f'<rect {block} fill="{YELLOW}" class="s" stroke-width="{border}" transform="skewX(-12) translate({lean:.1f} 0)"/>')
     letters("S", halo=True)
     letters("ym")
     o_shape("square")
