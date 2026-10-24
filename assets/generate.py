@@ -23,11 +23,13 @@ OUT = Path(__file__).parent
 
 TEAL, CORAL, YELLOW, PINK = "#2ec4b6", "#ff6b6b", "#ffd166", "#ffb6c1"
 INK, CREAM = "#1a1a1a", "#f4f0e6"
+PAGE, PAGE_DARK = "#ffffff", "#0d1117"
 
 # Outlines and shadows flip to cream in dark mode, as the site's --black does.
+# .h is a halo in GitHub's page color that separates a letter from what sits behind it.
 STYLE = (
-    f"<style>.i{{fill:{INK}}}.s{{stroke:{INK}}}"
-    f"@media (prefers-color-scheme:dark){{.i{{fill:{CREAM}}}.s{{stroke:{CREAM}}}}}</style>"
+    f"<style>.i{{fill:{INK}}}.s{{stroke:{INK}}}.h{{stroke:{PAGE}}}"
+    f"@media (prefers-color-scheme:dark){{.i{{fill:{CREAM}}}.s{{stroke:{CREAM}}}.h{{stroke:{PAGE_DARK}}}}}</style>"
 )
 
 
@@ -80,9 +82,10 @@ def wordmark(bold: Face) -> str:
     parts: list[str] = []
     x = border
 
-    def letters(text: str) -> None:
+    def letters(text: str, halo: bool = False) -> None:
         nonlocal x
-        parts.append(f'<path class="i" d="{bold.path(text, size, x, base)}"/>')
+        outline = ' stroke-width="4" stroke-linejoin="round" paint-order="stroke"' if halo else ""
+        parts.append(f'<path class="i{" h" if halo else ""}"{outline} d="{bold.path(text, size, x, base)}"/>')
         x += bold.width(text, size)
 
     def o_shape(kind: str) -> None:
@@ -109,7 +112,8 @@ def wordmark(bold: Face) -> str:
     stripe = f'x="{sx - sw / 2:.1f}" y="{base - size:.1f}" width="{sw:.1f}" height="{sh:.1f}"'
     tilt = f'rotate(-15 {sx:.1f} {base - size * 0.375:.1f})'
     parts.append(f'<rect {stripe} fill="{YELLOW}" class="s" stroke-width="{border}" transform="{tilt}"/>')
-    letters("Sym")
+    letters("S", halo=True)
+    letters("ym")
     o_shape("square")
     letters("nds")
     return svg(x + border, size * 1.35, "".join(parts), "Josh Symonds")
